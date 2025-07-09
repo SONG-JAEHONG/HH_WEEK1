@@ -4,6 +4,9 @@ import io.hhplus.tdd.database.PointHistoryTable;
 import io.hhplus.tdd.database.UserPointTable;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -11,10 +14,14 @@ public class PointService {
 
     private final UserPointTable userPointTable;
     private final PointHistoryTable pointHistoryTable;
+    private final Clock clock;
 
-    public PointService(UserPointTable userPointTable, PointHistoryTable pointHistoryTable) {
+
+    public PointService(UserPointTable userPointTable, PointHistoryTable pointHistoryTable, Clock clock) {
         this.userPointTable = userPointTable;
         this.pointHistoryTable = pointHistoryTable;
+        this.clock = clock;
+
     }
 
 
@@ -30,7 +37,6 @@ public class PointService {
 
     public UserPoint charge(long userId, long amount) {
 
-        UserPoint current = userPointTable.selectById(userId);
 
         if (amount <= 0) {
             throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다.");
@@ -38,6 +44,14 @@ public class PointService {
         if (amount > 1_000_000_000L) {
             throw new IllegalArgumentException("충전 금액은 최대 10억까지 가능합니다.");
         }
+
+        // 🔽 보너스: 금요일이면 +1,000
+        LocalDate today = LocalDate.now(clock);
+        if (today.getDayOfWeek() == DayOfWeek.FRIDAY) {
+            amount += 1_000L;
+        }
+
+        UserPoint current = userPointTable.selectById(userId);
 
 
         // 없으면 0포인트 유저로 간주

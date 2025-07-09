@@ -3,10 +3,11 @@ package io.hhplus.tdd;
 import io.hhplus.tdd.database.PointHistoryTable;
 import io.hhplus.tdd.database.UserPointTable;
 import io.hhplus.tdd.point.PointService;
-import io.hhplus.tdd.point.UserPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
+import java.time.Clock;
+import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -16,6 +17,7 @@ public class PointServiceValidationTest {
     PointService pointService;
     UserPointTable userPointTable;
     PointHistoryTable pointHistoryTable;
+    Clock clock;
 
     long userId = 1L;
 
@@ -23,7 +25,9 @@ public class PointServiceValidationTest {
     void setUp() {
         userPointTable = mock(UserPointTable.class);
         pointHistoryTable = mock(PointHistoryTable.class);
-        pointService = new PointService(userPointTable, pointHistoryTable);
+        clock = Clock.system(ZoneId.systemDefault()); // 기본 시스템 시간 사용
+        pointService = new PointService(userPointTable, pointHistoryTable, clock);
+
     }
 
     @Test

@@ -11,6 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,6 +27,7 @@ public class PointServiceTest {
 
     @Mock
     PointHistoryTable pointHistoryTable;
+
 
     @InjectMocks
     PointService pointService;
@@ -123,4 +127,35 @@ public class PointServiceTest {
         assertEquals(TransactionType.CHARGE, result.get(0).type());
         verify(pointHistoryTable).selectAllByUserId(userId);
     }
+
+    @Test
+    void 금요일에는_충전_보너스가_추가된다() {
+        // given
+        Clock fridayClock = Clock.fixed(
+                LocalDate.of(2025, 7, 11).atStartOfDay(ZoneId.systemDefault()).toInstant(),
+                ZoneId.systemDefault()
+        );
+
+        UserPointTable userPointTable = mock(UserPointTable.class);
+        PointHistoryTable pointHistoryTable = mock(PointHistoryTable.class);
+        PointService pointService = new PointService(userPointTable, pointHistoryTable, fridayClock);
+
+        long userId = 1L;
+        long amount = 2_000L; // 실제 충전 금액
+        long expectedTotal = 3_000L; // +1,000 보너스 기대
+
+        UserPoint before = new UserPoint(userId, 1_000L, System.currentTimeMillis());
+        UserPoint after = new UserPoint(userId, 4_000L, System.currentTimeMillis());
+
+        when(userPointTable.selectById(userId)).thenReturn(before);
+        when(userPointTable.insertOrUpdate(userId, 4_000L)).thenReturn(after);
+
+        // when
+        UserPoint result = pointService.charge(userId, amount);
+
+        // then
+        assertEquals(4_000L, result.point());
+        verify(pointHistoryTable).insert(eq(userId), eq(3_000L), eq(TransactionType.CHARGE), anyLong());
+    }
+
 }

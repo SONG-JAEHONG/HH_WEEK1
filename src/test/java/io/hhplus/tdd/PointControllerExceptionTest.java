@@ -47,7 +47,7 @@ public class PointControllerExceptionTest {
         long amount = 500L;
 
         // when
-        when(pointService.charge(userId, amount)).thenThrow(new RuntimeException("예상치 못한 오류"));
+        when(pointService.charge(userId, amount)).thenThrow(new RuntimeException("예상치 못한 오류."));
 
         // then
         mockMvc.perform(patch("/point/2/charge")
