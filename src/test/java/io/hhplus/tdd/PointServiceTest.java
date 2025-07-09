@@ -9,7 +9,9 @@ import io.hhplus.tdd.point.UserPoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -19,7 +21,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
+@ExtendWith(MockitoExtension.class)
 public class PointServiceTest {
 
     @Mock
@@ -28,11 +30,24 @@ public class PointServiceTest {
     @Mock
     PointHistoryTable pointHistoryTable;
 
+    @Mock
+    Clock clock;
 
     @InjectMocks
     PointService pointService;
 
     long userId = 1L;
+
+    @BeforeEach
+    void setupClock() {
+        lenient().when(clock.instant())
+                .thenReturn(LocalDate.of(2025, 7, 9)
+                        .atStartOfDay(ZoneId.systemDefault())
+                        .toInstant());
+
+        lenient().when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+    }
+
 
     @Test
     void 포인트_조회_요청시_해당_유저의_포인트가_조회된다() {
@@ -142,7 +157,7 @@ public class PointServiceTest {
 
         long userId = 1L;
         long amount = 2_000L; // 실제 충전 금액
-        long expectedTotal = 3_000L; // +1,000 보너스 기대
+        long expectedTotal = 3_000L; // 보너스 포함
 
         UserPoint before = new UserPoint(userId, 1_000L, System.currentTimeMillis());
         UserPoint after = new UserPoint(userId, 4_000L, System.currentTimeMillis());
@@ -155,7 +170,6 @@ public class PointServiceTest {
 
         // then
         assertEquals(4_000L, result.point());
-        verify(pointHistoryTable).insert(eq(userId), eq(3_000L), eq(TransactionType.CHARGE), anyLong());
+        verify(pointHistoryTable).insert(eq(userId), eq(expectedTotal), eq(TransactionType.CHARGE), anyLong());
     }
-
 }
