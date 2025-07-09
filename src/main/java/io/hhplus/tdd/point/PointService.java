@@ -32,6 +32,14 @@ public class PointService {
 
         UserPoint current = userPointTable.selectById(userId);
 
+        if (amount <= 0) {
+            throw new IllegalArgumentException("충전 금액은 0보다 커야 합니다.");
+        }
+        if (amount > 1_000_000_000L) {
+            throw new IllegalArgumentException("충전 금액은 최대 10억까지 가능합니다.");
+        }
+
+
         // 없으면 0포인트 유저로 간주
         if (current == null) {
             current = new UserPoint(userId, 0L, System.currentTimeMillis());
@@ -48,6 +56,10 @@ public class PointService {
     public UserPoint use(long userId, long amount) {
         // 현재 포인트 조회
         UserPoint current = userPointTable.selectById(userId);
+
+        if (amount <= 0) {
+            throw new IllegalArgumentException("사용 금액은 0보다 커야 합니다.");
+        }
 
         if (current.point() < amount) {
             throw new IllegalArgumentException("잔액 부족");
