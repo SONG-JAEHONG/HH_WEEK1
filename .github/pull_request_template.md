@@ -9,7 +9,7 @@
     - 단위 테스트와 통합 테스트 둘다 기능 테스트와 예외 테스트로 나누었습니다.
     - 단위 테스트 : pointServiceTest.class(기능 테스트), pointServiceValidationTest.class( 예외 테스트)
     - 통합 테스트 : pointControllerTest.class(기능 테스트), pointControllerExceptionTest.class(예외 테스트)
- --> 보통 이렇게 class 별로 나누어서 테스트 코드를 작성하나요?
+ --> 보통 이렇게 테스트의 목적별로 class 나누어서 테스트 코드를 작성하나요??
       
   
 ---
